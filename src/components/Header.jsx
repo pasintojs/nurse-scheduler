@@ -1,23 +1,15 @@
-import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, SparklesIcon } from '@heroicons/react/24/outline'
 
-const Header = ({ onAddNurse, selectedWeek, onWeekChange }) => {
-  const formatWeekRange = (date) => {
-    const startOfWeek = new Date(date)
-    const day = startOfWeek.getDay()
-    const diff = startOfWeek.getDate() - day
-    startOfWeek.setDate(diff)
-    
-    const endOfWeek = new Date(startOfWeek)
-    endOfWeek.setDate(startOfWeek.getDate() + 6)
-    
-    const formatOptions = { month: 'short', day: 'numeric' }
-    return `${startOfWeek.toLocaleDateString('en-US', formatOptions)} - ${endOfWeek.toLocaleDateString('en-US', formatOptions)}`
+const Header = ({ onAddNurse, selectedMonth, onMonthChange, onGenerateSchedule }) => {
+  const formatMonthYear = (date) => {
+    const formatOptions = { month: 'long', year: 'numeric' }
+    return date.toLocaleDateString('en-US', formatOptions)
   }
 
-  const changeWeek = (direction) => {
-    const newDate = new Date(selectedWeek)
-    newDate.setDate(newDate.getDate() + (direction * 7))
-    onWeekChange(newDate)
+  const changeMonth = (direction) => {
+    const newDate = new Date(selectedMonth)
+    newDate.setMonth(newDate.getMonth() + direction)
+    onMonthChange(newDate)
   }
 
   return (
@@ -36,23 +28,31 @@ const Header = ({ onAddNurse, selectedWeek, onWeekChange }) => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 bg-gray-50 rounded-lg px-3 py-2">
               <button
-                onClick={() => changeWeek(-1)}
+                onClick={() => changeMonth(-1)}
                 className="p-1 hover:bg-gray-200 rounded-md transition-colors"
               >
                 <ChevronLeftIcon className="w-4 h-4" />
               </button>
               
               <span className="font-medium text-gray-700 min-w-[140px] text-center">
-                {formatWeekRange(selectedWeek)}
+                {formatMonthYear(selectedMonth)}
               </span>
               
               <button
-                onClick={() => changeWeek(1)}
+                onClick={() => changeMonth(1)}
                 className="p-1 hover:bg-gray-200 rounded-md transition-colors"
               >
                 <ChevronRightIcon className="w-4 h-4" />
               </button>
             </div>
+            
+            <button
+              onClick={onGenerateSchedule}
+              className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              <SparklesIcon className="w-4 h-4" />
+              <span className="hidden sm:inline">Random Schedule</span>
+            </button>
             
             <button
               onClick={onAddNurse}

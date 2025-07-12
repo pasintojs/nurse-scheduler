@@ -8,20 +8,19 @@ const SHIFTS = {
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-const ScheduleView = ({ nurses, schedules, selectedWeek, onUpdateSchedule }) => {
+const ScheduleView = ({ nurses, schedules, selectedMonth, onUpdateSchedule }) => {
   const [selectedCell, setSelectedCell] = useState(null)
   
-  const getWeekDates = (date) => {
-    const startOfWeek = new Date(date)
-    const day = startOfWeek.getDay()
-    const diff = startOfWeek.getDate() - day
-    startOfWeek.setDate(diff)
+  const getMonthDates = (date) => {
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const lastDay = new Date(year, month + 1, 0)
     
-    return Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(startOfWeek)
-      date.setDate(startOfWeek.getDate() + i)
-      return date
-    })
+    const dates = []
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      dates.push(new Date(year, month, day))
+    }
+    return dates
   }
 
   const formatDate = (date) => {
@@ -48,12 +47,12 @@ const ScheduleView = ({ nurses, schedules, selectedWeek, onUpdateSchedule }) => 
     }
   }
 
-  const weekDates = getWeekDates(selectedWeek)
+  const monthDates = getMonthDates(selectedMonth)
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">Weekly Schedule</h2>
+        <h2 className="text-lg font-semibold text-gray-900">Monthly Schedule</h2>
         <p className="text-sm text-gray-500 mt-1">Click on cells to assign shifts</p>
       </div>
       
@@ -64,11 +63,13 @@ const ScheduleView = ({ nurses, schedules, selectedWeek, onUpdateSchedule }) => 
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10">
                 Nurse
               </th>
-              {weekDates.map((date, index) => (
-                <th key={index} className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-                  <div>{DAYS[index]}</div>
-                  <div className="font-normal text-gray-400">
-                    {date.getMonth() + 1}/{date.getDate()}
+              {monthDates.map((date, index) => (
+                <th key={index} className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">
+                  <div className="font-normal text-gray-700">
+                    {date.getDate()}
+                  </div>
+                  <div className="font-normal text-gray-400 text-xs">
+                    {DAYS[date.getDay()]}
                   </div>
                 </th>
               ))}
@@ -78,7 +79,7 @@ const ScheduleView = ({ nurses, schedules, selectedWeek, onUpdateSchedule }) => 
           <tbody className="bg-white divide-y divide-gray-200">
             {nurses.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={monthDates.length + 1} className="px-4 py-8 text-center text-gray-500">
                   Add nurses to start scheduling
                 </td>
               </tr>
@@ -101,19 +102,19 @@ const ScheduleView = ({ nurses, schedules, selectedWeek, onUpdateSchedule }) => 
                     </div>
                   </td>
                   
-                  {weekDates.map((date, dateIndex) => {
+                  {monthDates.map((date, dateIndex) => {
                     const shift = getScheduleForNurseAndDate(nurse.id, date)
                     const isSelected = selectedCell?.nurseId === nurse.id && selectedCell?.date === formatDate(date)
                     
                     return (
                       <td 
                         key={dateIndex} 
-                        className="px-2 py-3 text-center cursor-pointer hover:bg-gray-100 transition-colors"
+                        className="px-1 py-2 text-center cursor-pointer hover:bg-gray-100 transition-colors"
                         onClick={() => handleCellClick(nurse.id, date)}
                       >
                         {shift ? (
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${SHIFTS[shift].color} ${isSelected ? 'ring-2 ring-blue-500' : ''}`}>
-                            {SHIFTS[shift].name}
+                          <span className={`px-1 py-1 rounded text-xs font-medium ${SHIFTS[shift].color} ${isSelected ? 'ring-2 ring-blue-500' : ''}`}>
+                            {shift === 'day' ? 'D' : shift === 'night' ? 'N' : 'O'}
                           </span>
                         ) : (
                           <div className={`h-6 w-full rounded border-2 border-dashed border-gray-300 ${isSelected ? 'border-blue-500 bg-blue-50' : 'hover:border-gray-400'}`} />
